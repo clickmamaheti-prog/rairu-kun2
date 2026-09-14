@@ -23,11 +23,11 @@ TITLE+="║  RAM   │ ${RAM}                ║\n"
 TITLE+="║  Disk  │ ${DISK}               ║\n"
 TITLE+="║  Uptime│ ${UPTIME}                    ║\n"
 
-# Check zrok tunnels
+# Check ngrok tunnels
 for port in 22 80 8080; do
-    ZPID="/tmp/zrok-${port}.pid"
+    ZPID="/tmp/ngrok/${port}.pid"
     if test -f "$ZPID" && kill -0 "$(cat "$ZPID" 2>/dev/null)" 2>/dev/null; then
-        ZURL=$(grep -oP 'https?://[a-z0-9.-]+\.zrok\.io' /tmp/zrok-${port}.log 2>/dev/null | head -1)
+        ZURL=$(grep -oP 'tcp://\K[0-9a-zA-Z.:-]+' /tmp/ngrok/${port}.log 2>/dev/null | tail -1)
         ZTEXT="${ZURL:-● Running}"
     else
         ZTEXT="○ Stopped"

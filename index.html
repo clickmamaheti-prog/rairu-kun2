@@ -56,7 +56,7 @@ body {
 <div class="container">
     <div class="header">
         <h1>✦ Rairu-Kun2</h1>
-        <p>DevCulture Premium VPS · Ubuntu 20.04 · zrok Tunnel</p>
+        <p>DevCulture Premium VPS · Ubuntu 20.04 · ngrok Tunnel</p>
         <span class="badge">⚡ Powered by DevCulture ©2026</span>
     </div>
 
@@ -69,12 +69,12 @@ body {
         <div class="card">
             <div class="icon">🔐</div>
             <div class="label">SSH Access</div>
-            <div class="value online">via zrok</div>
+            <div class="value online">via ngrok</div>
         </div>
         <div class="card">
             <div class="icon">🌐</div>
             <div class="label">Tunnel</div>
-            <div class="value online">zrok ✓</div>
+            <div class="value online">ngrok ✓</div>
         </div>
         <div class="card">
             <div class="icon">📡</div>
@@ -87,15 +87,11 @@ body {
         <h2>🔧 <span>SSH Access</span></h2>
         <div class="code-block">
             <pre>
-# Step 1: Install zrok client (one time)
-curl -fsSL https://github.com/openziti/zrok/releases/latest/download/zrok_0.4.30_linux_amd64.tar.gz | tar -xz -C /usr/local/bin/ zrok
+# Get the SSH endpoint from the ntfy notification or container logs
+# (looks like: 0.tcp.ap.ngrok.io:12345)
 
-# Step 2: Access the private SSH tunnel
-zrok access private &lt;token&gt; --bind 127.0.0.1:2222
-
-# Step 3: SSH into VPS
-ssh root@127.0.0.1 -p 2222
-# Password: (set via ROOT_PASS env var, default: DevCulture2026)</pre>
+ssh root@0.tcp.ap.ngrok.io -p 12345
+# Password: set via ROOT_PASS env var (auto-generated if empty)</pre>
         </div>
     </div>
 
@@ -117,7 +113,7 @@ ssh root@127.0.0.1 -p 2222
 async function loadSysInfo() {
     try {
         const health = await fetch('/health').then(r => r.text());
-        document.getElementById('sysinfo').innerHTML = '<pre>🟢 Status: ' + health.trim() + '\n\n💡 Deploy your app on port 80, 8080, or other ports\n💡 zrok tunnels forward to your VPS automatically\n💡 Check ntfy.sh/zrokIP22 for tunnel URLs</pre>';
+        document.getElementById('sysinfo').innerHTML = '<pre>🟢 Status: ' + health.trim() + '\n\n💡 Deploy your app on port 80, 8080, or other ports\n💡 ngrok tunnels forward to your VPS automatically\n💡 Check your ntfy topic for tunnel URLs</pre>';
     } catch(e) {
         document.getElementById('sysinfo').innerHTML = '<pre>○ Checking...</pre>';
     }

@@ -15,15 +15,15 @@
               powered by: DevCulture ©2026 linux
 ```
 
-# Rairu-Kun2 — Premium SSH VPS via zrok Tunnel
+# Rairu-Kun2 — Premium SSH VPS via ngrok Tunnel
 
-**Ubuntu 20.04 · zrok Zero-Trust Tunnel · Multi-Port · Railway · ntfy Premium**
+**Ubuntu 20.04 · ngrok Tunnel · Multi-Port · Railway · ntfy Premium**
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/new)
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04_LTS-E95420?logo=ubuntu&logoColor=white)
-![zrok](https://img.shields.io/badge/zrok-Tunnel-00e5ff?logo=ziti&logoColor=white)
+![ngrok](https://img.shields.io/badge/ngrok-Tunnel-1F176E?logo=ngrok&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-00e5ff)
 
@@ -36,13 +36,13 @@
 | Fitur | Keterangan |
 |-------|-----------|
 | 🖥 **Ubuntu 20.04 LTS** | OS premium, stabil dan ringan |
-| 🔑 **SSH via zrok** | Zero-trust tunnel — lebih aman dari bore/ngrok |
+| 🔑 **SSH via ngrok** | TCP tunnel publik — akses langsung `ssh root@<host> -p <port>` |
 | 🔐 **Supervisord** | Systemd alternative — auto-restart semua service |
 | 🌐 **Web UI Premium** | Dashboard dengan tema gelap DevCulture |
-| 📲 **ntfy Premium** | Notifikasi SSH URL + status periodik (topic: `zrokIP22`) |
-| 🔄 **zrok Tunnel** | Auto-restart jika tunnel mati |
+| 📲 **ntfy Premium** | Notifikasi SSH URL + status periodik (set topic unik milikmu) |
+| 🔄 **ngrok Tunnel** | Auto-restart jika tunnel mati |
 | 🐳 **Docker Ready** | Deploy ke Railway, Render, Fly.io, atau VPS |
-| 🆓 **100% Gratis** | Railway $5/bulan credit, semua tools gratis |
+| 🆓 **100% Gratis** | Cukup akun ngrok free + authtoken |
 
 ---
 
@@ -56,72 +56,58 @@ New Project → Deploy from GitHub → pilih repo ini
 
 | Variable | Wajib? | Default | Deskripsi |
 |----------|--------|---------|-----------|
-| `ZROK_TOKEN` | **⚠️ Wajib** | - | Token dari [myzrok.io](https://myzrok.io) |
-| `ROOT_PASS` | Opsional | `DevCulture2026` | Password SSH root |
-| `NTFY_TOPIC` | Opsional | `zrokIP22` | Topic ntfy untuk notifikasi |
+| `NGROK_AUTHTOKEN` | **⚠️ Wajib** | - | Authtoken dari [dashboard.ngrok.com](https://dashboard.ngrok.com/get-started/your-authtoken) |
+| `ROOT_PASS` | Opsional | *(auto-generated)* | Password SSH root — kosong = password acak kuat dibuat otomatis (lihat log) |
+| `NTFY_TOPIC` | Opsional | *(kosong)* | Topic ntfy unik untuk notifikasi (contoh: `rairu-abc123`) |
 | `TZ` | Opsional | `Asia/Jakarta` | Timezone |
 | `PORT` | Opsional | `8080` | Port web UI |
+| `NGROK_DOMAIN_SSH` | Opsional | - | Reserved TCP domain ngrok (kalau punya) |
 
-### 4. Daftar zrok
-1. Buka https://myzrok.io
+### 4. Daftar ngrok
+1. Buka https://dashboard.ngrok.com/signup
 2. Register (gratis)
-3. Dapatkan token → set sebagai `ZROK_TOKEN`
+3. Copy authtoken → set sebagai `NGROK_AUTHTOKEN`
 
 ### 5. Subscribe ntfy di HP (untuk notifikasi)
 ```
-ntfy.sh/zrokIP22
+ntfy.sh/<NTFY_TOPIC-anda>
 ```
+
+> ⚠️ **Pakai topic unik!** Topic publik bisa dibaca siapa saja — password SSH kamu ikut terkirim ke situ.
 
 ---
 
 ## 🔐 Cara Akses SSH
 
-Karena zrok menggunakan **private tunnel** untuk SSH, kamu perlu:
+ngrok membuka **TCP tunnel publik** untuk SSH — tidak perlu install client tambahan:
 
-### Install zrok client (sekali saja)
 ```bash
-# Linux
-curl -fsSL https://github.com/openziti/zrok/releases/latest/download/zrok_0.4.30_linux_amd64.tar.gz \
-  | tar -xz -C /usr/local/bin/ zrok
+# Endpoint muncul di notifikasi ntfy atau log container:
+#   ✅ SSH → 0.tcp.ap.ngrok.io:12345
 
-# macOS
-brew install zrok
+ssh root@0.tcp.ap.ngrok.io -p 12345
+# Password: nilai ROOT_PASS (atau password auto-generated dari log)
 ```
 
-### Akses SSH tunnel
-```bash
-# Buka tunnel ke localhost:2222
-zrok access private <TOKEN> --bind 127.0.0.1:2222
-
-# SSH dari terminal lain
-ssh root@127.0.0.1 -p 2222
-```
-
-> **TOKEN** dapat dilihat di notifikasi ntfy (`zrokIP22`) atau di log container.
+> **Catatan:** ngrok free = 1 tunnel online + endpoint acak yang berubah tiap restart. Untuk endpoint tetap, reserved TCP domain tersedia di plan berbayar (set `NGROK_DOMAIN_SSH`).
 
 ---
 
 ## 🌐 Akses Web
 
-zrok juga membuka **public tunnel** ke port 80 (Web UI) dan port 8080 (App):
-```
-https://xxxxx.zrok.io
-```
-URL akan muncul di notifikasi ntfy.
+ngrok juga membuka tunnel ke port 80 (Web UI) dan port 8080 (App) — tapi di plan free hanya **1 tunnel** yang bisa online bersamaan. Prioritas script adalah **SSH (port 22)**, jadi kalau butuh web tunnel, matikan SSH tunnel di `ngrok-setup.sh` atau upgrade ke plan berbayar.
 
 ---
 
 ## 📲 Notifikasi ntfy
 
-Semua notifikasi dikirim ke topic **`zrokIP22`**:
+Semua notifikasi dikirim ke topic **`NTFY_TOPIC`** milikmu:
 
 | Event | Notifikasi |
 |-------|-----------|
-| ⚡ VPS Online | SSH token + Web URL + password |
-| 📊 Status (5 menit) | Uptime, RAM, Disk, Token SSH |
+| ⚡ VPS Online | SSH endpoint + Web URL + password |
+| 📊 Status (5 menit) | Uptime, RAM, Disk, SSH endpoint |
 | 🚨 Tunnel Restart | Alert jika tunnel mati |
-
-Subscribe: [ntfy.sh/zrokIP22](https://ntfy.sh/zrokIP22)
 
 ---
 
@@ -129,10 +115,10 @@ Subscribe: [ntfy.sh/zrokIP22](https://ntfy.sh/zrokIP22)
 
 ```
 rairu-kun2/
-├── Dockerfile                 # Ubuntu 20.04 + zrok + supervisord
-├── entrypoint.sh              # Startup config + supervisord
+├── Dockerfile                 # Ubuntu 20.04 + ngrok + supervisord
+├── entrypoint.sh              # Startup config + auto password + supervisord
 ├── supervisord.conf           # Process manager (systemd alternative)
-├── zrok-setup.sh              # zrok enable + tunnel manager + ntfy
+├── ngrok-setup.sh             # ngrok tunnels + ntfy + watchdog
 ├── watchdog.sh                # Service watchdog (SSH, Nginx)
 ├── nginx-ollama.conf          # Nginx config web UI
 ├── index.html                 # DevCulture Web UI
@@ -154,7 +140,7 @@ rairu-kun2/
 │  (systemd alternative)           │
 ├──────────────────────────────────┤
 │  ┌──────┐ ┌──────┐ ┌──────────┐  │
-│  │ SSH  │ │Nginx │ │ zrok     │  │
+│  │ SSH  │ │Nginx │ │ ngrok    │  │
 │  │sshd -D│ │:PORT│ │ Tunnel   │  │
 │  └──────┘ └──────┘ │ Manager  │  │
 │                    └──────────┘  │
@@ -165,7 +151,7 @@ rairu-kun2/
 └──────────────────────────────────┘
          │
     ┌────┴────┐
-    │  zrok   │ ← Zero-trust tunnel
+    │  ngrok  │ ← Public TCP tunnel
     │  Cloud  │
     └─────────┘
     SSH / HTTPS
@@ -175,11 +161,13 @@ rairu-kun2/
 
 ## ⚠️ Catatan Penting
 
-- **zrok WAJIB** didaftarkan dulu di https://myzrok.io
-- Satu akun zrok free bisa bikin banyak token
+- **NGROK_AUTHTOKEN WAJIB** — daftar gratis di https://dashboard.ngrok.com/signup
+- **Tidak ada password default** — `ROOT_PASS` kosong = password acak dibuat otomatis saat start (lihat log/ntfy)
+- Plan free ngrok: **1 tunnel online** — script memprioritaskan SSH (port 22)
+- Endpoint TCP acak berubah tiap restart — selalu cek notifikasi/log terbaru
 - **TIDAK pakai Ollama** — pure VPS + SSH + tunnel
 - Semua service auto-restart via supervisord & watchdog
-- Notifikasi dikirim ke ntfy.sh/zrokIP22
+- Jangan pernah commit password/token ke repo
 
 ---
 
@@ -187,7 +175,7 @@ rairu-kun2/
 
 **Dibuat dengan ❤️ oleh [DevCulture](https://github.com/clickmamaheti-prog)**
 
-*Premium VPS via zrok · No Ollama · Supervisord Powered*
+*Premium VPS via ngrok · No Ollama · Supervisord Powered*
 
 ⭐ **Star repo ini jika membantu!** ⭐
 
