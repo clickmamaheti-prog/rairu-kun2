@@ -1,0 +1,15 @@
+{
+    "name": "Rairu-Kun2 VPS",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "remoteEnv": {
+        "SHELL": "/bin/bash"
+    },
+    "forwardPorts": [8080],
+    "portsAttributes": {
+        "8080": {
+            "label": "Web UI",
+            "onAutoForward": "openBrowser"
+        }
+    },
+    "postStartCommand": "bash .devcontainer/start-vps.sh"
+}
