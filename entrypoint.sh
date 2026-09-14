@@ -4,31 +4,24 @@ set -e
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
 log "╔═══════════════════════════════════════╗"
-log "║   Rairu-Kun2 — DevCulture VPS v5.0   ║"
+log "║   Rairu-Kun2 — DevCulture VPS v6.0   ║"
 log "╚═══════════════════════════════════════╝"
 
 # ---- Environment (auto-detect from platform variables) ----
-# Just fill these in on Railway/Render/Fly and everything configures itself:
-#   NGROK_AUTHTOKEN — from https://dashboard.ngrok.com/get-started/your-authtoken
-#   ROOT_PASS       — optional; random strong password auto-generated if empty
-#   NTFY_TOPIC      — optional; unique ntfy.sh topic for notifications
+# Fill these in on Railway/Render/snapdeploy and everything configures itself:
+#   ROOT_PASS   — optional; random strong password auto-generated if empty
+#   NTFY_TOPIC  — optional; unique ntfy.sh topic for notifications
+#   BORE_SERVER — optional; default bore.pub (no token, no card needed)
 ROOT_PASS="${ROOT_PASS:-}"
 NTFY_TOPIC="${NTFY_TOPIC:-}"
 PORT="${PORT:-8080}"
 TZ="${TZ:-Asia/Jakarta}"
-NGROK_AUTHTOKEN="${NGROK_AUTHTOKEN:-}"
-NGROK_DOMAIN_SSH="${NGROK_DOMAIN_SSH:-}"
+BORE_SERVER="${BORE_SERVER:-bore.pub}"
 
 log "➡️ PORT=$PORT"
 log "➡️ TZ=$TZ"
-if test -n "$NGROK_AUTHTOKEN"; then
-    log "➡️ NGROK_AUTHTOKEN=✅ configured"
-else
-    log "➡️ NGROK_AUTHTOKEN=❌ NOT SET — tunnels will be disabled!"
-    log "   Get one free at https://dashboard.ngrok.com/get-started/your-authtoken"
-fi
-test -n "$NGROK_DOMAIN_SSH" && log "➡️ NGROK_DOMAIN_SSH=$NGROK_DOMAIN_SSH"
-test -n "$NTFY_TOPIC" && log "➡️ NTFY TOPIC=$NTFY_TOPIC"
+log "➡️ BORE_SERVER=$BORE_SERVER"
+test -n "$NTFY_TOPIC" && log "➡️ NTFY TOPIC=$NTFY_TOPIC" || log "➡️ NTFY: disabled (set NTFY_TOPIC to enable)"
 
 # ---- Root password: use ROOT_PASS, or auto-generate a strong one ----
 if test -z "$ROOT_PASS"; then
@@ -62,13 +55,6 @@ server {
 }
 EOF
 log "➡️ Nginx config updated for PORT=$PORT"
-
-# ---- Configure ngrok authtoken (if provided) ----
-if test -n "$NGROK_AUTHTOKEN"; then
-    ngrok config add-authtoken "$NGROK_AUTHTOKEN" >/dev/null 2>&1 \
-        && log "➡️ ngrok authtoken configured" \
-        || log "⚠️ ngrok authtoken configuration failed"
-fi
 
 # ---- Start supervisord (manages everything) ----
 log "➡️ Starting supervisord..."

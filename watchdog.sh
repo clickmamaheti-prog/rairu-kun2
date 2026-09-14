@@ -20,8 +20,8 @@ while true; do
         /usr/sbin/nginx 2>/dev/null
     fi
 
-    # ngrok tunnel manager
-    if ! pgrep -f "ngrok-setup.sh" >/dev/null 2>&1; then
-        log "⚠️ ngrok manager down — supervisord will restart"
+    # bore tunnel manager
+    if ! pgrep -f "bore-setup.sh" >/dev/null 2>&1; then
+        log "⚠️ bore manager down — supervisord will restart"
     fi
 done

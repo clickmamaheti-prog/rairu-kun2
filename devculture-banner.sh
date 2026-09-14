@@ -23,11 +23,12 @@ TITLE+="║  RAM   │ ${RAM}                ║\n"
 TITLE+="║  Disk  │ ${DISK}               ║\n"
 TITLE+="║  Uptime│ ${UPTIME}                    ║\n"
 
-# Check ngrok tunnels
+# Check bore tunnels
+BORE_SERVER="${BORE_SERVER:-bore.pub}"
 for port in 22 80 8080; do
-    ZPID="/tmp/ngrok/${port}.pid"
+    ZPID="/tmp/bore/${port}.pid"
     if test -f "$ZPID" && kill -0 "$(cat "$ZPID" 2>/dev/null)" 2>/dev/null; then
-        ZURL=$(grep -oP 'tcp://\K[0-9a-zA-Z.:-]+' /tmp/ngrok/${port}.log 2>/dev/null | tail -1)
+        ZURL=$(grep -oE "${BORE_SERVER}:[0-9]+" /tmp/bore/${port}.log 2>/dev/null | head -1)
         ZTEXT="${ZURL:-● Running}"
     else
         ZTEXT="○ Stopped"

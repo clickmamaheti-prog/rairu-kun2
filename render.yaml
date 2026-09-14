@@ -9,8 +9,8 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: NGROK_AUTHTOKEN
-        sync: false
+      - key: BORE_SERVER
+        value: bore.pub
       - key: ROOT_PASS
         sync: false
       - key: NTFY_TOPIC
